@@ -57,27 +57,29 @@ Message& Message::operator=(const Message& other) noexcept
     return *this;
 }
 
-Message::Message(Message&& other) noexcept
-{
-    *this = std::move(other);
-}
+// Message::Message(Message&& other) noexcept
+// {
+//     *this = std::move(other);
+// }
 
-Message& Message::operator=(Message&& other) noexcept
-{
-    msg_ = other.msg_;
-    other.msg_ = nullptr;
-    type_ = other.type_;
-    other.type_ = {};
-    ok_ = other.ok_;
-    other.ok_ = true;
+// Message& Message::operator=(Message&& other) noexcept
+// {
+//     msg_ = other.msg_;
+//     other.msg_ = nullptr;
+//     type_ = other.type_;
+//     other.type_ = {};
+//     ok_ = other.ok_;
+//     other.ok_ = true;
 
-    return *this;
-}
+//     return *this;
+// }
 
 Message::~Message()
 {
     if (msg_)
+    {
         sd_bus_message_unref((sd_bus_message*)msg_);
+    }
 }
 
 Message& Message::operator<<(bool item)
@@ -657,19 +659,22 @@ Message::Type Message::getType() const
 Message createPlainMessage()
 {
     int r;
-
     sd_bus* bus{};
-    SCOPE_EXIT{ sd_bus_unref(bus); }; // sdbusMsg will hold reference to the bus
+    SCOPE_EXIT{ 
+         //sd_bus_unref(bus); 
+         sd_bus_flush_close_unref(bus);
+         }; // sdbusMsg will hold reference to the bus
     r = sd_bus_default_system(&bus);
     if (r < 0)
         SDBUS_THROW_ERROR("Failed to get default system bus", -r);
 
     sd_bus_message* sdbusMsg{};
-    SCOPE_EXIT{ sd_bus_message_unref(sdbusMsg); }; // Returned message will become an owner of sdbusMsg
     r = sd_bus_message_new(bus, &sdbusMsg, _SD_BUS_MESSAGE_TYPE_INVALID);
+    SCOPE_EXIT{ sd_bus_message_unref(sdbusMsg); }; // Returned message will become an owner of sdbusMsg
     if (r < 0)
         SDBUS_THROW_ERROR("Failed to create a new message", -r);
 
+    
     return Message(sdbusMsg, Message::Type::ePlainMessage);
 }
 

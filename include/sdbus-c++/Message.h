@@ -77,8 +77,8 @@ namespace sdbus {
         Message(void *msg, Type type = Type::ePlainMessage) noexcept;
         Message(const Message&) noexcept;
         Message& operator=(const Message&) noexcept;
-        Message(Message&& other) noexcept;
-        Message& operator=(Message&& other) noexcept;
+        //Message(Message&& other) noexcept;
+        //Message& operator=(Message&& other) noexcept;
         ~Message();
 
         Message& operator<<(bool item);
